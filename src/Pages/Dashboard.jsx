@@ -38,82 +38,82 @@ const Dashboard = () => {
   const [tags, setTags] = useState([])
 
   useEffect(() => {
-      const getCred = localStorage.getItem("userCred")
-      setUserCred(JSON.parse(getCred))
-      setGo(true)
-    }, [])
+    const getCred = localStorage.getItem("userCred")
+    setUserCred(JSON.parse(getCred))
+    setGo(true)
+  }, [])
 
-    useEffect(() => {
-      let holdCollection = []
-      cards.map((output)=>{
-        if (output?.collection && output?.collection != "undefined") {
-          
-          const filterCOllection = holdCollection.filter(col=> col != output?.collection)
-          filterCOllection.push(output?.collection)
-          holdCollection = filterCOllection
-        }
+  useEffect(() => {
+    let holdCollection = []
+    cards.map((output) => {
+      if (output?.collection && output?.collection != "undefined") {
+
+        const filterCOllection = holdCollection.filter(col => col != output?.collection)
+        filterCOllection.push(output?.collection)
+        holdCollection = filterCOllection
+      }
+    })
+    setAllCollection(holdCollection)
+  }, [cards])
+
+
+  useEffect(() => {
+    if (!go) {
+      return
+    }
+    if (checked) {
+      return
+    }
+    if (userCred) {
+      setChecked(true)
+      axios.post("https://new-ethereal-bk.onrender.com/fetchUserCred", {
+        email: userCred.email
       })
-      setAllCollection(holdCollection)
-    }, [cards])
-    
-
-    useEffect(() => {
-      if (!go) {
-        return
-      }
-      if (checked) {
-        return
-      }
-      if (userCred) {
-        setChecked(true)
-        axios.post("https://new-ethereal-bk.onrender.com/fetchUserCred",{
-          email: userCred.email
-        })
-        .then((userResult)=>{
-          setUserCred(userResult?.data?.message)          
-          if (userResult?.data?.message?.activated) { 
+        .then((userResult) => {
+          setUserCred(userResult?.data?.message)
+          if (userResult?.data?.message?.activated) {
             axios.post("https://new-ethereal-bk.onrender.com/fetchAllNote", {
               mail: userCred.email
             })
-            .then((output)=>{
-              setCards(output?.data?.message || [])              
-              setLoading(false)
-              axios.post("https://new-ethereal-bk.onrender.com/fetchTags", {
-                mail: userCred.email
+              .then((output) => {
+                setCards(output?.data?.message || [])
+                setLoading(false)
+                axios.post("https://new-ethereal-bk.onrender.com/fetchTags", {
+                  mail: userCred.email
+                })
+                  .then((allTags) => {
+
+                    setTags(allTags?.data?.message)
+                  })
+                  .catch((error) => {
+                    alert("Error fetching Tags")
+
+                  })
               })
-              .then((allTags)=>{
-                
-                setTags(allTags?.data?.message)
+              .catch((error) => {
+                if (error?.response?.data?.message) {
+                  alert(error.response.data.message)
+                }
               })
-              .catch((error)=>{
-                alert("Error fetching Tags")
-                
-              })
-            })
-            .catch((error)=>{
-              if (error?.response?.data?.message) {
-                alert(error.response.data.message)
-              }
-            })
           }
-          else{
+          else {
             navigate("/confirmOTP")
           }
         })
-        .catch((error)=>{
+        .catch((error) => {
           if (error?.response?.data?.message) {
             alert(error?.response?.data?.message)
           }
           navigate("/signin")
         })
 
-      }
-      else{
-        navigate("/signup")
-      }
-    }, [userCred])
-    
-  const openMenu = () =>{
+    }
+    else {
+      navigate("/signup")
+    }
+  }, [userCred])
+
+  const openMenu = () => {
     document.querySelector(".sidemenu-overall").style.display = "flex"
   }
 
@@ -122,22 +122,22 @@ const Dashboard = () => {
     <div className='dashboard-overall'>
       <header className='dashboard-header'>
         <div>
-          <img src={menu2} alt="" onClick={openMenu}/>
+          <img src={menu2} alt="" onClick={openMenu} />
           <img src={logo} alt="" />
         </div>
-          <img src={menu1} alt="" />
+        <img src={menu1} alt="" />
       </header>
-      {preview? <Preview setPreview={setPreview} previewValue={previewValue} setPreviewValue={setPreviewValue}/> : null}
-      {loading? (
+      {preview ? <Preview setPreview={setPreview} previewValue={previewValue} setPreviewValue={setPreviewValue} /> : null}
+      {loading ? (
         <div className="splash">
           <img src={loader} alt="" />
         </div>
       ) : null}
-      <SideMenu setTagActive={setTagActive} setCurrentCollection={setCurrentCollection} allCollection={allCollection} setEditNote={setEditNote} userCred={userCred} setUserCred={setUserCred} currentSection={currentSection} setCurrentSection={setCurrentSection}/>
-      {EditNote? EditNote == "edit"? <EditComponent setCards={setCards} editObj={editObj} mail={userCred?.email} allCollection={allCollection} setEditNote={setEditNote}/>: <CreateNote setCards={setCards} mail={userCred?.email} allCollection={allCollection} setEditNote={setEditNote}/> :<NoteComponent currentCollection={currentCollection} setEditObj={setEditObj} allCollection={allCollection} setEditNote={setEditNote} cards={cards} setCards={setCards} userCred={userCred} setUserCred={setUserCred} currentSection={currentSection} setPreview={setPreview} setPreviewValue={setPreviewValue}/>}
-      {tagActive? <Tag setEditTagActive={setEditTagActive} setTagObj={setTagObj} tags={tags} setTags={setTags} setTagActive={setTagActive} setAddTagActive={setAddTagActive}/>: null}
-      {addTagActive? <AddTag tagObj={tagObj} setTags={setTags} mail={userCred?.email} setAddTagActive={setAddTagActive}/>: null}
-      {editTagActive? <EditTag setTags={setTags} setEditTagActive={setEditTagActive} setTagObj={setTagObj} tagObj={tagObj} mail={userCred?.email} /> : null}
+      <SideMenu setTagActive={setTagActive} setCurrentCollection={setCurrentCollection} allCollection={allCollection} setEditNote={setEditNote} userCred={userCred} setUserCred={setUserCred} currentSection={currentSection} setCurrentSection={setCurrentSection} />
+      {EditNote ? EditNote == "edit" ? <EditComponent setCards={setCards} editObj={editObj} mail={userCred?.email} allCollection={allCollection} setEditNote={setEditNote} /> : <CreateNote setCards={setCards} mail={userCred?.email} allCollection={allCollection} setEditNote={setEditNote} /> : <NoteComponent currentCollection={currentCollection} setEditObj={setEditObj} allCollection={allCollection} setEditNote={setEditNote} cards={cards} setCards={setCards} userCred={userCred} setUserCred={setUserCred} currentSection={currentSection} setPreview={setPreview} setPreviewValue={setPreviewValue} />}
+      {tagActive ? <Tag setEditTagActive={setEditTagActive} setTagObj={setTagObj} tags={tags} setTags={setTags} setTagActive={setTagActive} setAddTagActive={setAddTagActive} /> : null}
+      {addTagActive ? <AddTag tagObj={tagObj} setTags={setTags} mail={userCred?.email} setAddTagActive={setAddTagActive} /> : null}
+      {editTagActive ? <EditTag setTags={setTags} setEditTagActive={setEditTagActive} setTagObj={setTagObj} tagObj={tagObj} mail={userCred?.email} /> : null}
     </div>
   )
 }
